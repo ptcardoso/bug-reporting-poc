@@ -6,6 +6,7 @@ import Typography from "@material-ui/core/Typography";
 import CardActions from "@material-ui/core/CardActions";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import {ScreenRecorder, Recorder} from "./ScreenRecorder";
 
 const classes = {
     card: {
@@ -45,8 +46,45 @@ const classes = {
 };
 
 class App extends Component {
+
+    state = {
+        attachments: []
+    };
+
+    onStopRecording = (uri) => {
+        this.setState({
+            attachments: [...this.state.attachments, { uri, name: 'screen-recording.webm' }]
+        })
+    };
+
+    componentDidMount() {
+        ScreenRecorder.addEventListener(Recorder.events.stopRecording, this.onStopRecording)
+    }
+
+    componentWillUnmount() {
+        ScreenRecorder.removeEventListener(Recorder.events.stopRecording, this.onStopRecording)
+    }
+
+    recordVideo = (e) => {
+        e.preventDefault();
+        ScreenRecorder.startCapturing().then((state) => {
+            if (state === 'recording') {
+                const a = document.createElement("a");
+                a.href = "https://www.bepretty.cl/";
+                const evt = document.createEvent("MouseEvents");
+                evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, true, false, false, false, 0, null);
+                a.dispatchEvent(evt);
+            }
+        });
+        return false
+    };
+
     renderForm() {
-        const ActionSpan = ({children}) => <span style={classes.actionSpan}>{children}</span>;
+        const AttachmentLink = ({children, ...props}) => (
+            <a style={classes.actionSpan} href="https://www.bepretty.cl/" target="_blank" rel="noopener noreferrer" onClick={this.recordVideo}>
+                {children}
+            </a>
+        );
         return (
             <Card style={classes.card}>
                 <form className={classes.container} noValidate autoComplete="off">
@@ -69,10 +107,13 @@ class App extends Component {
                             margin="normal"
                         />
                         <Typography color="textSecondary" style={classes.attachmentsText}>
-                            Attachments <ActionSpan>Record Video</ActionSpan> <ActionSpan>Attach File</ActionSpan>
+                            Attachments <AttachmentLink onClick={this.recordVideo}>Record Video</AttachmentLink>
                         </Typography>
                         <Typography color="textSecondary">
-                            No Attachments
+                            {this.state.attachments.map((attachment, index) => (
+                                <a  href={attachment.uri} download={attachment.name} key={index}>{attachment.name}</a>
+                            ))}
+                            {!this.state.attachments.length && <span>No Attachments</span>}
                         </Typography>
                     </CardContent>
                     <CardActions style={classes.actions}>
