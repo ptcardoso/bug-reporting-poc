@@ -71,6 +71,7 @@ class App extends Component {
             if (state === 'recording') {
                 const a = document.createElement("a");
                 a.href = "https://www.bepretty.cl/";
+                a.target = '_blank'
                 const evt = document.createEvent("MouseEvents");
                 evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, true, false, false, false, 0, null);
                 a.dispatchEvent(evt);
